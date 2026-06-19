@@ -33,6 +33,9 @@ const initialUsers = [
   { id: 'mgr-003', username: 'manager3', password: 'manager3', name: 'Vũ Thị Lan', role: 'MANAGER', status: 'INACTIVE' },
   // Sinh viên (STUDENT)
   { id: 'sv-001', username: 'student', password: 'student', name: 'Trần Văn Sinh', role: 'STUDENT', studentId: 'st-001', studentCode: 'SV001' },
+  { id: 'sv-002', username: 'sv1', password: 'sv1', name: 'Sinh Viên 1', role: 'STUDENT', studentId: 'st-002', studentCode: 'SV002' },
+  { id: 'sv-003', username: 'sv2', password: 'sv2', name: 'Sinh Viên 2', role: 'STUDENT', studentId: 'st-003', studentCode: 'SV003' },
+  { id: 'sv-004', username: 'sv3', password: 'sv3', name: 'Sinh Viên 3', role: 'STUDENT', studentId: 'st-004', studentCode: 'SV004' },
 ]
 
 const users = getStored('users', initialUsers)
@@ -46,6 +49,9 @@ const initialInvoices = [
   { id: 'inv-005', studentId: 'st-005', studentCode: 'SV005', studentName: 'Hoàng Đức Anh', roomNumber: 'A105', period: '06/2026', amount: 1200000, dueDate: '2026-06-05', paidDate: null, status: 'UNPAID', paymentMethod: null, note: '', createdAt: '2026-05-20T08:00:00Z' },
   { id: 'inv-006', studentId: 'st-001', studentCode: 'SV001', studentName: 'Trần Văn Sinh', roomNumber: 'A101', period: '05/2026', amount: 1200000, dueDate: '2026-05-05', paidDate: '2026-05-03T09:00:00Z', status: 'PAID', paymentMethod: 'TRANSFER', note: '', createdAt: '2026-04-20T08:00:00Z' },
   { id: 'inv-007', studentId: 'st-006', studentCode: 'SV006', studentName: 'Vũ Thị Mai', roomNumber: 'B301', period: '06/2026', amount: 800000, dueDate: '2026-06-05', paidDate: null, status: 'CANCELLED', paymentMethod: null, note: 'Hủy do chuyển phòng', createdAt: '2026-05-20T08:00:00Z' },
+  { id: 'inv-008', studentId: 'st-002', studentCode: 'SV002', studentName: 'Sinh Viên 1', roomNumber: 'A102', period: '06/2026', amount: 1200000, dueDate: '2026-06-05', paidDate: null, status: 'UNPAID', paymentMethod: null, note: '', createdAt: '2026-05-20T08:00:00Z' },
+  { id: 'inv-009', studentId: 'st-003', studentCode: 'SV003', studentName: 'Sinh Viên 2', roomNumber: 'A103', period: '06/2026', amount: 1200000, dueDate: '2026-06-05', paidDate: null, status: 'UNPAID', paymentMethod: null, note: '', createdAt: '2026-05-20T08:00:00Z' },
+  { id: 'inv-010', studentId: 'st-004', studentCode: 'SV004', studentName: 'Sinh Viên 3', roomNumber: 'A104', period: '06/2026', amount: 1200000, dueDate: '2026-06-05', paidDate: null, status: 'UNPAID', paymentMethod: null, note: '', createdAt: '2026-05-20T08:00:00Z' },
 ]
 
 const invoices = getStored('invoices', initialInvoices)
@@ -76,8 +82,20 @@ saveStored('users', users)
 saveStored('invoices', invoices)
 saveStored('maintenanceRequests', maintenanceRequests)
 
-// ── Auth endpoints removed because real API exists ──
+// ── Auth endpoints ──
+mock.onPost('/api/auth/login').reply((config) => {
+  const { username, password } = JSON.parse(config.data)
+  const user = users.find((u: any) => u.username === username && u.password === password)
+  if (!user) {
+    return [401, { title: 'Sai tài khoản hoặc mật khẩu', status: 401 }]
+  }
+  if (user.status !== 'ACTIVE') {
+    return [403, { title: 'Tài khoản đã bị khóa', status: 403 }]
+  }
 
+  const token = 'mock-jwt-token-for-' + user.username
+  return [200, { token, user: { id: user.id, username: user.username, name: user.name, role: user.role, studentId: user.studentId } }]
+})
 // ── Staff CRUD Endpoints (ADMIN + MANAGER) ──
 mock.onGet('/api/admins').reply((config) => {
   const params = config.params || {}
@@ -182,8 +200,12 @@ mock.onDelete(/\/api\/admins\/[^/]+$/).reply((config) => {
 
 // ── Invoices Endpoints ──
 mock.onGet('/api/invoices/my').reply(() => {
-  // Mock returns invoices for student 'st-001'
-  const myInvoices = invoices.filter((i: any) => i.studentId === 'st-001')
+  let studentId = 'st-001'
+  try {
+    const user = JSON.parse(localStorage.getItem('ktx_user') || '{}')
+    if (user && user.studentId) studentId = user.studentId
+  } catch (e) {}
+  const myInvoices = invoices.filter((i: any) => i.studentId === studentId)
   return [200, { items: myInvoices }]
 })
 
