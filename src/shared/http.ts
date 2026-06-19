@@ -2,9 +2,9 @@ import axios from 'axios'
 
 // Các prefix proxy đã được khai báo trong vite.config.ts
 // Vite server sẽ tự forward request tới đúng backend, tránh CORS
-const CONTRACT_PROXY = '/contract-api'   // → api-contract-nhom2contract-student-api.onrender.com
-const ROOM_PROXY     = '/room-api'        // → roombuildingservice-1ijx.onrender.com
-const BILLING_PROXY  = '/billing-api'     // → billing-maintenance-backend.onrender.com
+const CONTRACT_PROXY = import.meta.env.VITE_API_BASE_URL || '/contract-api'   // → api-contract-nhom2contract-student-api.onrender.com
+const ROOM_PROXY     = import.meta.env.VITE_ROOM_API_BASE_URL || '/room-api'        // → roombuildingservice-1ijx.onrender.com
+const BILLING_PROXY  = import.meta.env.VITE_BILLING_API_BASE_URL || '/billing-api'     // → billing-maintenance-backend.onrender.com
 
 export const http = axios.create({
   timeout: 30000,
@@ -16,7 +16,12 @@ http.interceptors.request.use((config) => {
   const url = config.url || ''
 
   // Chỉ xử lý nếu URL chưa phải là full URL hoặc proxy path
-  if (!url.startsWith('http') && !url.startsWith('/contract-api') && !url.startsWith('/room-api') && !url.startsWith('/billing-api')) {
+  if (
+    !url.startsWith('http') &&
+    !url.startsWith(CONTRACT_PROXY) &&
+    !url.startsWith(ROOM_PROXY) &&
+    !url.startsWith(BILLING_PROXY)
+  ) {
     // Room API (Nhóm 1)
     const roomPrefixes    = ['/api/rooms', '/api/buildings', '/api/roomtypes', '/api/beds', '/api/equipments']
     // Billing & Auth API (Nhóm 3)
