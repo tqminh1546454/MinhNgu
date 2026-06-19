@@ -62,6 +62,12 @@ const delItem = ref<any>(null)
 const delDialog = ref()
 const form = ref({ name: '', totalFloors: 1, genderType: 'MALE', description: '', status: 'ACTIVE' })
 
+const BUILDING_STATUS_OPTIONS = [
+  { title: 'Hoạt động', value: 'ACTIVE' },
+  { title: 'Bảo trì', value: 'UNDER_MAINTENANCE' },
+  { title: 'Không hoạt động', value: 'INACTIVE' },
+]
+
 const headers = [
   { title: 'Tên', key: 'name' }, { title: 'Số tầng', key: 'totalFloors', width: 90 },
   { title: 'Loại KTX', key: 'genderType', width: 110 }, 

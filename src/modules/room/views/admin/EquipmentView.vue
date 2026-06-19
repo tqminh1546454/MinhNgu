@@ -25,6 +25,12 @@ import { http } from '@/shared/http'
 import { useNotify } from '@/shared/composables/useNotify'
 const { success } = useNotify()
 const items = ref<any[]>([]); const loading = ref(false); const search = ref(''); const showStatus = ref(false); const eqItem = ref<any>(null); const newStatus = ref('')
+const EQUIPMENT_STATUS_OPTIONS = [
+  { title: 'Hoạt động', value: 'ACTIVE' },
+  { title: 'Bảo trì', value: 'UNDER_MAINTENANCE' },
+  { title: 'Hỏng', value: 'BROKEN' },
+  { title: 'Đã thanh lý', value: 'RETIRED' },
+]
 const headers = [{ title: 'Phòng', key: 'roomId', width: 100 },{ title: 'Thiết bị', key: 'equipmentName' },{ title: '', key: 'actions', width: 60, sortable: false }]
 async function changeStatus() { try { await http.patch(`/api/equipments/${eqItem.value.id}/status`, { status: newStatus.value }); success('Đã cập nhật'); showStatus.value = false; loadData() } catch(e) { console.error(e) } }
 async function loadData() { loading.value=true; try { const{data}=await http.get('/api/equipments'); items.value=data } catch(e){console.error(e)} finally{loading.value=false} }

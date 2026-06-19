@@ -54,6 +54,13 @@ const showEqStatus = ref(false)
 const eqItem = ref<any>(null)
 const newEqStatus = ref('')
 
+const EQUIPMENT_STATUS_OPTIONS = [
+  { title: 'Hoạt động', value: 'ACTIVE' },
+  { title: 'Bảo trì', value: 'UNDER_MAINTENANCE' },
+  { title: 'Hỏng', value: 'BROKEN' },
+  { title: 'Đã thanh lý', value: 'RETIRED' },
+]
+
 const bedHeaders = [
   { title: 'Mã giường', key: 'bedNumber' },
   { title: 'Sinh viên đang ở', key: 'studentName' },

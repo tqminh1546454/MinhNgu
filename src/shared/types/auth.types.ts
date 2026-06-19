@@ -6,6 +6,8 @@ export interface User {
   status?: string
   studentId?: string
   studentCode?: string
+  email?: string
+  phone?: string
 }
 
 export interface LoginRequest {
