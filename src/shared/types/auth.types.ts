@@ -8,6 +8,7 @@ export interface User {
   studentCode?: string
   email?: string
   phone?: string
+  fullName?: string
 }
 
 export interface LoginRequest {

@@ -60,13 +60,7 @@ const availableStatuses = computed(() => {
 async function updateStatus() {
   saving.value = true
   try {
-    const action = newStatus.value === 'IN_PROGRESS' ? 'assign' : newStatus.value === 'COMPLETED' ? 'complete' : 'cancel'
-    let newStatus = 'Pending'
-    if (action === 'assign' || action === 'start') newStatus = 'Processing'
-    else if (action === 'complete') newStatus = 'Completed'
-    else if (action === 'cancel') newStatus = 'Cancelled'
-    
-    await http.put(`/api/maintenance/${route.params.id}/status`, { status: newStatus, technicianId: assignee.value ? parseInt(assignee.value) : null, repairCost: cost.value || 0 })
+    await http.put(`/api/maintenance/${route.params.id}/status`, { status: newStatus.value, technicianId: assignee.value ? parseInt(assignee.value) : null, repairCost: cost.value || 0 })
     success('Đã cập nhật trạng thái')
     router.push('/billing/maintenance')
   } catch(e) { console.error(e) } finally { saving.value = false }

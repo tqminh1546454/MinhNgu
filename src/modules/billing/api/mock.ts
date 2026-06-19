@@ -61,7 +61,7 @@ const initialMaintenanceRequests = [
   { id: 'mt-007', studentId: 'st-006', studentCode: 'SV006', studentName: 'Vũ Thị Mai', roomId: 'room-009', roomNumber: 'B301', type: 'OTHER', description: 'Quạt trần kêu to khi bật', priority: 'NORMAL', status: 'CANCELLED', assignee: null, cost: null, completedAt: null, createdAt: '2026-06-01T15:00:00Z' },
 ]
 
-const maintenanceRequests = getStored('maintenanceRequests', initialMaintenanceRequests)
+const maintenanceRequests = getStored<any[]>('maintenanceRequests', initialMaintenanceRequests)
 
 // ── Reset nếu chưa có MANAGER (nâng cấp từ phiên bản cũ) ──
 const hasManager = users.some((u: any) => u.role === 'MANAGER')
