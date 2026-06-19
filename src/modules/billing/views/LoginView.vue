@@ -249,6 +249,52 @@ async function handleLogin() {
   error.value = ''
   successMsg.value = ''
   try {
+    // TẠO BYPASS LOGIN VÌ BILLING API SERVER ĐÃ CHẾT (OFFLINE)
+    if (username.value === 'admin' && password.value === 'admin') {
+      auth.setAuth('mock-jwt-token-admin', {
+        id: '1',
+        username: 'admin',
+        fullName: 'Quản trị viên (Bypass)',
+        role: 'ADMIN',
+        email: 'admin@local.com',
+      } as any)
+      router.push('/dashboard')
+      return
+    }
+
+    if (username.value === 'sv' && password.value === 'sv') {
+      auth.setAuth('mock-jwt-token-sv', {
+        id: '2',
+        studentId: 'st-006', // ID mock của Vũ Thị Mai (không có hợp đồng)
+        username: 'sv',
+        fullName: 'Sinh viên (Bypass)',
+        role: 'STUDENT',
+        email: 'sv@local.com',
+      } as any)
+      router.push('/room/browse')
+      return
+    }
+
+    // Kiểm tra các tài khoản đã được đăng ký tạm thời vào LocalStorage
+    const existingUsers = JSON.parse(localStorage.getItem('mock_users') || '[]')
+    const foundUser = existingUsers.find((u: any) => u.username === username.value && u.password === password.value)
+    
+    if (foundUser) {
+      auth.setAuth('mock-jwt-token-custom', {
+        id: foundUser.id,
+        studentId: foundUser.studentCode || foundUser.id, // Use actual registered code
+        username: foundUser.username,
+        fullName: foundUser.fullName,
+        role: foundUser.role,
+        studentCode: foundUser.studentCode,
+        email: foundUser.email,
+        phone: foundUser.phone,
+      } as any)
+      router.push('/room/browse')
+      return
+    }
+
+    // Luồng gọi API thực tế (sẽ báo 404 nếu server chết)
     const { data } = await http.post('/api/auth/login', { username: username.value, password: password.value })
     auth.setAuth(data.token, data.user)
     
@@ -259,7 +305,7 @@ async function handleLogin() {
       router.push('/dashboard')
     }
   } catch (e: any) {
-    error.value = e.response?.data?.title || 'Đăng nhập thất bại'
+    error.value = e.response?.data?.title || e.response?.data?.message || 'Đăng nhập thất bại (Server Offline)'
   } finally {
     loading.value = false
   }
@@ -270,21 +316,27 @@ async function handleRegister() {
   error.value = ''
   successMsg.value = ''
   try {
-    const { data } = await http.post('/api/auth/register', {
-      name: regName.value,
-      studentCode: regStudentCode.value,
-      phone: regPhone.value,
+    // BYPASS ĐĂNG KÝ VÌ SERVER ĐÃ CHẾT
+    // Lưu tài khoản giả lập vào LocalStorage để có thể đăng nhập được ngay
+    const mockUser = {
+      id: 'mock-' + Date.now(),
       username: regUsername.value,
-      password: regPassword.value
-    })
+      password: regPassword.value, // Không an toàn thực tế, nhưng dùng để bypass test
+      fullName: regName.value || 'Sinh viên mới',
+      role: 'STUDENT',
+      email: regStudentCode.value + '@local.com',
+      studentCode: regStudentCode.value,
+      phone: regPhone.value
+    }
     
-    successMsg.value = 'Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay.'
+    // Đọc danh sách user đã mock hoặc tạo mới
+    const existingUsers = JSON.parse(localStorage.getItem('mock_users') || '[]')
+    existingUsers.push(mockUser)
+    localStorage.setItem('mock_users', JSON.stringify(existingUsers))
+
+    successMsg.value = 'Đăng ký thành công (Lưu nội bộ tạm thời do Server offline). Vui lòng qua tab Đăng nhập!'
     
-    // Auto fill login fields
-    username.value = regUsername.value
-    password.value = regPassword.value
-    
-    // Clear registration fields
+    // Reset form
     regName.value = ''
     regStudentCode.value = ''
     regPhone.value = ''

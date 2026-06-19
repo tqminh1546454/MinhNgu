@@ -31,8 +31,7 @@
             <tr><td class="text-grey" width="120">Mã HĐ</td><td class="font-weight-medium">{{ contract.contractCode }}</td></tr>
             <tr><td class="text-grey">Thời hạn</td><td>{{ formatDate(contract.startDate) }} — {{ formatDate(contract.endDate) }}</td></tr>
             <tr><td class="text-grey">Giá/tháng</td><td class="font-weight-bold text-primary">{{ formatCurrency(contract.monthlyPrice) }}</td></tr>
-            <tr><td class="text-grey">Trạng thái</td><td><StatusChip :status="contract.status" /></td></tr>
-          </tbody></v-table>
+                      </tbody></v-table>
         </v-card>
       </v-col>
     </v-row>
@@ -43,7 +42,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatDate, formatEnum, formatCurrency } from '@/shared/utils/formatters'
 import { useAuthStore } from '@/shared/stores/authStore'
@@ -58,7 +56,22 @@ onMounted(async () => {
   try {
     const [sRes] = await Promise.all([http.get(`/api/students/${sid}/summary`)])
     student.value = sRes.data.student; contract.value = sRes.data.activeContract
-  } catch(e) { console.error(e) }
+  } catch(e) { 
+    console.error('Failed to fetch student summary:', e)
+    // Fallback to mock user data from auth store if API fails
+    if (auth.user) {
+      student.value = {
+        fullName: auth.user.fullName,
+        studentCode: auth.user.studentCode || 'Chưa cập nhật',
+        email: auth.user.email || 'Chưa cập nhật',
+        faculty: 'Chưa cập nhật',
+        gender: 'UNKNOWN',
+        dateOfBirth: null,
+        phoneNumber: auth.user.phone || 'Chưa cập nhật',
+        address: 'Chưa cập nhật'
+      }
+    }
+  }
   try { const { data } = await http.get(`/api/occupancies/student/${sid}/current`); occupancy.value = data } catch {}
 })
 </script>

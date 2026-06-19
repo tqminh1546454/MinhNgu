@@ -17,7 +17,7 @@
             <div class="text-center text-sm-left">
               <h2 class="text-h5 font-weight-bold mb-1">{{ student.fullName }}</h2>
               <div class="text-subtitle-1 text-grey-darken-1 mb-2">Mã SV: <span class="font-weight-bold">{{ student.studentCode }}</span></div>
-              <StatusChip :status="student.status" />
+              
             </div>
           </div>
           
@@ -50,8 +50,7 @@
             <tr><td class="text-grey" width="140">Mã HĐ</td><td><router-link :to="'/contract/contracts/'+contract.id" class="text-primary">{{ contract.contractCode }}</router-link></td></tr>
             <tr><td class="text-grey">Phòng</td><td>{{ contract.roomNumberSnapshot }}</td></tr>
             <tr><td class="text-grey">Thời hạn</td><td>{{ formatDate(contract.startDate) }} — {{ formatDate(contract.endDate) }}</td></tr>
-            <tr><td class="text-grey">Trạng thái</td><td><StatusChip :status="contract.status" /></td></tr>
-          </tbody></v-table>
+                      </tbody></v-table>
         </v-card>
       </v-col>
     </v-row>
@@ -63,7 +62,6 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatDate, formatEnum } from '@/shared/utils/formatters'
 

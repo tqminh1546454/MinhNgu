@@ -4,7 +4,7 @@
     <v-card class="pa-6" v-if="item">
       <v-row>
         <v-col cols="12" md="6">
-          <div class="d-flex align-center mb-4"><StatusChip :status="item.status" /><span class="ml-3 text-body-2 text-grey">{{ formatRelativeTime(item.createdAt) }}</span></div>
+          <div class="d-flex align-center mb-4"><span class="ml-3 text-body-2 text-grey">{{ formatRelativeTime(item.createdAt) }}</span></div>
           <v-table density="compact">
             <tbody>
               <tr><td class="text-grey" width="140">Phòng</td><td>{{ item.roomNumber }}</td></tr>
@@ -35,7 +35,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatRelativeTime, formatEnum, formatCurrency } from '@/shared/utils/formatters'
 import { useNotify } from '@/shared/composables/useNotify'
@@ -62,13 +61,18 @@ async function updateStatus() {
   saving.value = true
   try {
     const action = newStatus.value === 'IN_PROGRESS' ? 'assign' : newStatus.value === 'COMPLETED' ? 'complete' : 'cancel'
-    await http.patch(`/api/maintenance-requests/${route.params.id}/${action}`, { assignee: assignee.value, cost: cost.value, note: note.value })
+    let newStatus = 'Pending'
+    if (action === 'assign' || action === 'start') newStatus = 'Processing'
+    else if (action === 'complete') newStatus = 'Completed'
+    else if (action === 'cancel') newStatus = 'Cancelled'
+    
+    await http.put(`/api/maintenance/${route.params.id}/status`, { status: newStatus, technicianId: assignee.value ? parseInt(assignee.value) : null, repairCost: cost.value || 0 })
     success('Đã cập nhật trạng thái')
     router.push('/billing/maintenance')
   } catch(e) { console.error(e) } finally { saving.value = false }
 }
 
 onMounted(async () => {
-  try { const { data } = await http.get(`/api/maintenance-requests/${route.params.id}`); item.value = data } catch(e) { console.error(e) }
+  try { const { data } = await http.get(`/api/maintenance/${route.params.id}`); item.value = data } catch(e) { console.error(e) }
 })
 </script>

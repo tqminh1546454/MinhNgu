@@ -18,5 +18,22 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/contract-api': {
+        target: 'https://api-contract-nhom2contract-student-api.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/contract-api/, ''),
+      },
+      '/room-api': {
+        target: 'https://roombuildingservice-1ijx.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/room-api/, ''),
+      },
+      '/billing-api': {
+        target: 'https://billing-maintenance-backend.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/billing-api/, ''),
+      },
+    },
   },
 })

@@ -76,44 +76,7 @@ saveStored('users', users)
 saveStored('invoices', invoices)
 saveStored('maintenanceRequests', maintenanceRequests)
 
-mock.onPost('/api/auth/login').reply((config) => {
-  const { username, password } = JSON.parse(config.data)
-  const user = users.find(u => u.username === username && u.password === password)
-  if (!user) return [401, { title: 'Sai tài khoản hoặc mật khẩu', status: 401 }]
-  if ((user.role === 'ADMIN' || user.role === 'MANAGER') && user.status === 'INACTIVE') {
-    return [400, { title: 'Tài khoản đang bị khóa', status: 400 }]
-  }
-  const { password: _, ...userWithoutPassword } = user
-  return [200, { token: 'mock-jwt-token-' + user.role, refreshToken: 'mock-refresh', user: userWithoutPassword }]
-})
-
-mock.onPost('/api/auth/register').reply((config) => {
-  const data = JSON.parse(config.data)
-  const exists = users.some(u => u.username.toLowerCase() === data.username.toLowerCase())
-  if (exists) {
-    return [400, { title: 'Tên đăng nhập đã tồn tại', status: 400 }]
-  }
-  const newUser: any = {
-    id: 'sv-' + Date.now(),
-    username: data.username,
-    password: data.password,
-    name: data.name,
-    role: 'STUDENT',
-    studentId: 'st-' + Date.now(),
-    studentCode: data.studentCode || ('SV' + Math.floor(Math.random() * 10000)),
-    phone: data.phone
-  }
-  ;(users as any[]).push(newUser)
-  saveStored('users', users)
-  return [200, { message: 'Đăng ký thành công', user: { id: newUser.id, username: newUser.username, name: newUser.name, role: newUser.role } }]
-})
-
-mock.onPost('/api/auth/logout').reply(200)
-mock.onGet('/api/auth/me').reply(() => {
-  const stored = localStorage.getItem('ktx_user')
-  if (!stored) return [401, { title: 'Chưa xác thực', status: 401 }]
-  return [200, JSON.parse(stored)]
-})
+// ── Auth endpoints removed because real API exists ──
 
 // ── Staff CRUD Endpoints (ADMIN + MANAGER) ──
 mock.onGet('/api/admins').reply((config) => {
@@ -217,102 +180,169 @@ mock.onDelete(/\/api\/admins\/[^/]+$/).reply((config) => {
   return [204]
 })
 
-// ── Invoices ──
+// ── Invoices Endpoints ──
+mock.onGet('/api/invoices/my').reply(() => {
+  // Mock returns invoices for student 'st-001'
+  const myInvoices = invoices.filter((i: any) => i.studentId === 'st-001')
+  return [200, { items: myInvoices }]
+})
+
 mock.onGet('/api/invoices').reply((config) => {
-  let filtered = [...invoices]
   const params = config.params || {}
-  if (params.status) filtered = filtered.filter(i => i.status === params.status)
-  if (params.studentId) filtered = filtered.filter(i => i.studentId === params.studentId)
+  let filtered = [...invoices]
+  
+  if (params.status) {
+    filtered = filtered.filter((i: any) => i.status === params.status)
+  }
   if (params.keyword) {
     const kw = params.keyword.toLowerCase()
-    filtered = filtered.filter(i => i.studentName.toLowerCase().includes(kw) || i.studentCode.toLowerCase().includes(kw))
+    filtered = filtered.filter((i: any) => 
+      i.studentName.toLowerCase().includes(kw) || 
+      i.studentCode.toLowerCase().includes(kw) ||
+      i.roomNumber.toLowerCase().includes(kw)
+    )
   }
+
   const page = parseInt(params.page) || 1
-  const pageSize = parseInt(params.pageSize) || 20
+  const pageSize = parseInt(params.pageSize) || 10
   const start = (page - 1) * pageSize
-  return [200, { items: filtered.slice(start, start + pageSize), page, pageSize, totalItems: filtered.length, totalPages: Math.ceil(filtered.length / pageSize) }]
+  const items = filtered.slice(start, start + pageSize)
+
+  return [200, {
+    items,
+    page,
+    pageSize,
+    totalItems: filtered.length,
+    totalPages: Math.ceil(filtered.length / pageSize)
+  }]
 })
 
 mock.onGet(/\/api\/invoices\/[^/]+$/).reply((config) => {
-  const id = config.url!.split('/').pop()
-  const item = invoices.find(i => i.id === id)
-  return item ? [200, item] : [404, { title: 'Không tìm thấy', status: 404 }]
-})
-
-mock.onPatch(/\/api\/invoices\/[^/]+\/pay/).reply((config) => {
-  const id = config.url!.split('/')[3]
-  const inv = invoices.find(i => i.id === id)
-  if (!inv) return [404]
-  const body = JSON.parse(config.data)
-  inv.status = 'PAID'
-  inv.paidDate = body.paidDate || new Date().toISOString()
-  inv.paymentMethod = body.paymentMethod
-  saveStored('invoices', invoices)
+  const urlParts = config.url!.split('/')
+  const id = urlParts[urlParts.length - 1]
+  const inv = invoices.find((i: any) => i.id === id)
+  if (!inv) return [404, { title: 'Không tìm thấy phiếu thu' }]
   return [200, inv]
 })
 
 mock.onPost('/api/invoices').reply((config) => {
-  const body = JSON.parse(config.data)
-  const item = {
+  const data = JSON.parse(config.data)
+  const newInvoice = {
     id: 'inv-' + Date.now(),
-    studentId: body.studentId,
-    studentCode: body.studentCode,
-    studentName: body.studentName,
-    roomNumber: body.roomNumber || '—',
-    period: body.period,
-    amount: body.amount,
-    dueDate: body.dueDate,
+    studentId: data.studentId || 'st-001',
+    studentCode: data.studentCode || 'SV001',
+    studentName: data.studentName || 'Nguyễn Văn A',
+    roomNumber: data.roomNumber || 'A101',
+    period: data.period,
+    amount: data.amount,
+    dueDate: data.dueDate,
     paidDate: null,
     status: 'UNPAID',
     paymentMethod: null,
-    note: body.note || '',
+    note: data.note || '',
     createdAt: new Date().toISOString()
   }
-  invoices.push(item)
+  invoices.unshift(newInvoice)
   saveStored('invoices', invoices)
-  return [201, item]
+  return [201, newInvoice]
 })
 
-// ── Maintenance ──
-mock.onGet('/api/maintenance-requests').reply((config) => {
+mock.onPatch(/\/api\/invoices\/[^/]+\/pay/).reply((config) => {
+  const urlParts = config.url!.split('/')
+  // url is /api/invoices/inv-001/pay
+  const id = urlParts[urlParts.length - 2]
+  const data = JSON.parse(config.data)
+  
+  const idx = invoices.findIndex((i: any) => i.id === id)
+  if (idx === -1) return [404, { title: 'Không tìm thấy phiếu thu' }]
+  
+  invoices[idx] = {
+    ...invoices[idx],
+    status: 'PAID',
+    paymentMethod: data.paymentMethod || 'CASH',
+    paidDate: data.paidDate || new Date().toISOString()
+  }
+  saveStored('invoices', invoices)
+  return [200, invoices[idx]]
+})
+
+// ── Maintenance Endpoints ──
+mock.onGet('/api/maintenance').reply((config) => {
+  const params = config.params || {}
   let filtered = [...maintenanceRequests]
-  const p = config.params || {}
-  if (p.status) filtered = filtered.filter(i => i.status === p.status)
-  if (p.type) filtered = filtered.filter(i => i.type === p.type)
-  if (p.studentId) filtered = filtered.filter(i => i.studentId === p.studentId)
-  const page = parseInt(p.page) || 1
-  const pageSize = parseInt(p.pageSize) || 20
+  
+  if (params.studentId) {
+    filtered = filtered.filter((m: any) => m.studentId === params.studentId)
+  }
+  if (params.status) {
+    filtered = filtered.filter((m: any) => m.status === params.status)
+  }
+  if (params.type) {
+    filtered = filtered.filter((m: any) => m.type === params.type)
+  }
+
+  const page = parseInt(params.page) || 1
+  const pageSize = parseInt(params.pageSize) || 10
   const start = (page - 1) * pageSize
-  return [200, { items: filtered.slice(start, start + pageSize), page, pageSize, totalItems: filtered.length, totalPages: Math.ceil(filtered.length / pageSize) }]
+  const items = filtered.slice(start, start + pageSize)
+
+  return [200, {
+    items,
+    page,
+    pageSize,
+    totalItems: filtered.length,
+    totalPages: Math.ceil(filtered.length / pageSize)
+  }]
 })
 
-mock.onGet(/\/api\/maintenance-requests\/[^/]+$/).reply((config) => {
-  const id = config.url!.split('/').pop()
-  const item = maintenanceRequests.find(m => m.id === id)
-  return item ? [200, item] : [404]
+mock.onGet(/\/api\/maintenance\/[^/]+$/).reply((config) => {
+  const urlParts = config.url!.split('/')
+  const id = urlParts[urlParts.length - 1]
+  const mt = maintenanceRequests.find((m: any) => m.id === id)
+  if (!mt) return [404, { title: 'Không tìm thấy yêu cầu' }]
+  return [200, mt]
 })
 
-mock.onPost('/api/maintenance-requests').reply((config) => {
-  const body = JSON.parse(config.data)
-  const item = { id: 'mt-' + Date.now(), ...body, status: 'NEW', assignee: null, cost: null, completedAt: null, createdAt: new Date().toISOString() }
-  maintenanceRequests.push(item)
+mock.onPost('/api/maintenance').reply((config) => {
+  const data = JSON.parse(config.data)
+  const newMt = {
+    id: 'mt-' + Date.now(),
+    studentId: data.studentId || 'st-001',
+    studentCode: data.studentCode || 'SV001',
+    studentName: data.studentName || 'Nguyễn Văn A',
+    roomId: data.roomId || 'room-001',
+    roomNumber: data.roomNumber || 'A101',
+    type: data.type || 'OTHER',
+    description: data.description,
+    priority: data.priority || 'NORMAL',
+    status: 'NEW',
+    assignee: null,
+    cost: null,
+    completedAt: null,
+    createdAt: new Date().toISOString()
+  }
+  maintenanceRequests.unshift(newMt)
   saveStored('maintenanceRequests', maintenanceRequests)
-  return [201, item]
+  return [201, newMt]
 })
 
-mock.onPatch(/\/api\/maintenance-requests\/[^/]+\/(assign|start|complete|cancel)/).reply((config) => {
-  const parts = config.url!.split('/')
-  const action = parts.pop()
-  const id = parts.pop()
-  const item = maintenanceRequests.find(m => m.id === id)
-  if (!item) return [404]
-  const body = config.data ? JSON.parse(config.data) : {}
-  if (action === 'assign') { item.status = 'IN_PROGRESS'; item.assignee = body.assignee }
-  if (action === 'start') { item.status = 'IN_PROGRESS' }
-  if (action === 'complete') { item.status = 'COMPLETED'; item.completedAt = new Date().toISOString(); item.cost = body.cost }
-  if (action === 'cancel') { item.status = 'CANCELLED' }
+mock.onPut(/\/api\/maintenance\/[^/]+\/status/).reply((config) => {
+  const urlParts = config.url!.split('/')
+  const id = urlParts[urlParts.length - 2]
+  const data = JSON.parse(config.data)
+  
+  const idx = maintenanceRequests.findIndex((m: any) => m.id === id)
+  if (idx === -1) return [404, { title: 'Không tìm thấy yêu cầu' }]
+  
+  maintenanceRequests[idx] = {
+    ...maintenanceRequests[idx],
+    status: data.status,
+    assignee: data.technicianId ? 'Kỹ thuật viên ' + data.technicianId : maintenanceRequests[idx].assignee,
+    cost: data.repairCost || maintenanceRequests[idx].cost,
+    completedAt: data.status === 'COMPLETED' ? new Date().toISOString() : maintenanceRequests[idx].completedAt
+  }
   saveStored('maintenanceRequests', maintenanceRequests)
-  return [204]
+  return [200, maintenanceRequests[idx]]
 })
 
 // ── Dashboard ──

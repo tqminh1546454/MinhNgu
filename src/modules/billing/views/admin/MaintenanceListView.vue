@@ -6,8 +6,7 @@
     <v-card class="pa-4 mb-4">
       <v-row dense align="center">
         <v-col cols="auto"><v-btn-toggle v-model="viewMode" mandatory color="primary" density="compact"><v-btn value="kanban" icon="mdi-view-column" /><v-btn value="table" icon="mdi-table" /></v-btn-toggle></v-col>
-        <v-col cols="12" sm="3"><v-select v-model="statusFilter" :items="[{title:'Tất cả',value:''}, ...MAINTENANCE_STATUS_OPTIONS]" label="Trạng thái" density="compact" @update:model-value="loadData" /></v-col>
-        <v-col cols="12" sm="3"><v-select v-model="typeFilter" :items="[{title:'Tất cả',value:''}, ...MAINTENANCE_TYPE_OPTIONS]" label="Loại sự cố" density="compact" @update:model-value="loadData" /></v-col>
+                <v-col cols="12" sm="3"><v-select v-model="typeFilter" :items="[{title:'Tất cả',value:''}, ...MAINTENANCE_TYPE_OPTIONS]" label="Loại sự cố" density="compact" @update:model-value="loadData" /></v-col>
       </v-row>
     </v-card>
 
@@ -33,8 +32,7 @@
     <v-card v-else>
       <v-data-table-server :headers="headers" :items="items" :items-length="total" :loading="loading" :items-per-page="pageSize" :page="page" @update:page="page=$event;loadData()" @update:items-per-page="pageSize=$event;loadData()">
         <template #item.type="{ item }">{{ formatEnum(item.type) }}</template>
-        <template #item.status="{ item }"><StatusChip :status="item.status" /></template>
-        <template #item.createdAt="{ item }">{{ formatRelativeTime(item.createdAt) }}</template>
+                <template #item.createdAt="{ item }">{{ formatRelativeTime(item.createdAt) }}</template>
         <template #item.actions="{ item }"><v-btn icon size="small" variant="text" @click="router.push('/billing/maintenance/'+item.id)"><v-icon>mdi-eye</v-icon></v-btn></template>
       </v-data-table-server>
     </v-card>
@@ -45,10 +43,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatRelativeTime, formatEnum } from '@/shared/utils/formatters'
-import { MAINTENANCE_STATUS_OPTIONS, MAINTENANCE_TYPE_OPTIONS } from '@/shared/utils/constants'
+import { MAINTENANCE_TYPE_OPTIONS } from '@/shared/utils/constants'
 
 const router = useRouter()
 const items = ref<any[]>([])
@@ -65,7 +62,7 @@ const headers = [
   { title: 'Sinh viên', key: 'studentName' },
   { title: 'Loại', key: 'type', width: 100 },
   { title: 'Mô tả', key: 'description' },
-  { title: 'Trạng thái', key: 'status', width: 120 },
+  
   { title: 'Thời gian', key: 'createdAt', width: 120 },
   { title: '', key: 'actions', width: 60, sortable: false },
 ]
@@ -87,7 +84,7 @@ const kanbanCols = computed(() => {
 async function loadData() {
   loading.value = true
   try {
-    const { data } = await http.get('/api/maintenance-requests', { params: { status: statusFilter.value, type: typeFilter.value, page: page.value, pageSize: 100 } })
+    const { data } = await http.get('/api/maintenance', { params: { status: statusFilter.value, type: typeFilter.value, page: page.value, pageSize: 100 } })
     items.value = data.items; total.value = data.totalItems
   } catch(e) { console.error(e) } finally { loading.value = false }
 }

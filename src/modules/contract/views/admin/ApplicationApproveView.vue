@@ -18,7 +18,7 @@
       <v-col cols="12" md="6">
         <v-card class="pa-4">
           <h3 class="text-subtitle-1 font-weight-bold mb-3">Tạo hợp đồng</h3>
-          <v-select v-model="form.roomId" :items="availableRooms" label="Chọn phòng *" class="mb-2" />
+          <v-select v-model="form.roomId" :items="availableRooms" label="Chọn phòng *" class="mb-2" :readonly="!!app.roomId" :hint="app.roomId ? 'Sinh viên đã chọn phòng này' : ''" persistent-hint />
           <v-select v-model="form.bedId" :items="availableBeds" label="Chọn giường *" class="mb-2" />
           <v-row dense>
             <v-col cols="6"><v-text-field v-model="form.contractStartDate" label="Bắt đầu" type="date" /></v-col>
@@ -58,6 +58,18 @@ async function approve() {
   approving.value = true
   try {
     await http.patch(`/api/room-applications/${route.params.id}/approve`, { ...form.value, approvedBy: 'admin-001' })
+    
+    // Fetch and auto-reject other pending applications for this student
+    try {
+      const { data } = await http.get('/api/room-applications', { params: { studentId: app.value.studentId, status: 'SUBMITTED', pageSize: 100 } })
+      const otherApps = data.items?.filter((a: any) => a.id !== app.value.id && a.status === 'SUBMITTED') || []
+      for (const otherApp of otherApps) {
+        await http.patch(`/api/room-applications/${otherApp.id}/reject`, { rejectReason: 'Hủy tự động: Sinh viên đã được duyệt một đơn khác' })
+      }
+    } catch (err) {
+      console.error('Failed to auto-reject other applications', err)
+    }
+
     success('Đã duyệt đơn và tạo hợp đồng')
     router.push('/contract/applications')
   } catch(e) { console.error(e) } finally { approving.value = false }
@@ -65,11 +77,14 @@ async function approve() {
 
 onMounted(async () => {
   try {
-    const [appRes, roomsRes] = await Promise.all([http.get(`/api/room-applications/${route.params.id}`), http.get('/api/room-references/available')])
+    const [appRes, roomsRes] = await Promise.all([http.get(`/api/room-applications/${route.params.id}`), http.get('/api/rooms/available')])
     app.value = appRes.data
-    availableRooms.value = roomsRes.data.map((r:any) => ({ title: `${r.roomNumber} — ${r.roomTypeName} (${r.availableSlots} chỗ trống)`, value: r.roomId }))
+    availableRooms.value = roomsRes.data.map((r:any) => ({ title: `${r.roomNumber} — ${r.roomType?.typeName || 'Phòng'} (${r.availableSlots} chỗ trống)`, value: r.id }))
     form.value.contractStartDate = app.value.expectedStartDate
     form.value.contractEndDate = app.value.expectedEndDate
+    if (app.value.roomId) {
+      form.value.roomId = app.value.roomId
+    }
   } catch(e) { console.error(e) }
 })
 </script>

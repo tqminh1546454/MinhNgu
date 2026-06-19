@@ -38,7 +38,7 @@ async function submit() {
   if (!valid) return
   loading.value = true
   try {
-    await http.post('/api/maintenance-requests', { ...form.value, studentId: auth.user?.studentId, studentCode: auth.user?.studentCode, studentName: auth.user?.name, roomId: 'room-001', roomNumber: 'A101' })
+    await http.post('/api/maintenance', { title: form.value.title, description: form.value.description, roomNumber: form.value.roomNumber || 'Phòng 101', repairCost: 0 })
     success('Đã gửi báo cáo sự cố')
     router.push('/billing/my-maintenance')
   } catch(e) { console.error(e) } finally { loading.value = false }

@@ -17,8 +17,7 @@
     <v-card class="pa-4 mb-4">
       <v-row dense>
         <v-col cols="12" sm="4"><v-text-field v-model="search" prepend-inner-icon="mdi-magnify" placeholder="Tìm SV..." clearable density="compact" @update:model-value="loadData" /></v-col>
-        <v-col cols="12" sm="4"><v-select v-model="statusFilter" :items="[{title:'Tất cả',value:''}, ...INVOICE_STATUS_OPTIONS]" label="Trạng thái" density="compact" @update:model-value="loadData" /></v-col>
-      </v-row>
+              </v-row>
     </v-card>
 
     <!-- Table -->
@@ -30,8 +29,7 @@
         :row-props="rowProps"
       >
         <template #item.amount="{ item }">{{ formatCurrency(item.amount) }}</template>
-        <template #item.status="{ item }"><StatusChip :status="item.status" /></template>
-        <template #item.dueDate="{ item }">{{ formatDate(item.dueDate) }}</template>
+                <template #item.dueDate="{ item }">{{ formatDate(item.dueDate) }}</template>
         <template #item.paidDate="{ item }">{{ item.paidDate ? formatDate(item.paidDate) : '—' }}</template>
         <template #item.actions="{ item }">
           <v-btn icon size="small" variant="text" @click="router.push('/billing/invoices/'+item.id)"><v-icon>mdi-eye</v-icon></v-btn>
@@ -135,10 +133,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatCurrency, formatDate } from '@/shared/utils/formatters'
-import { INVOICE_STATUS_OPTIONS, PAYMENT_METHOD_OPTIONS } from '@/shared/utils/constants'
+import { PAYMENT_METHOD_OPTIONS } from '@/shared/utils/constants'
 import { useNotify } from '@/shared/composables/useNotify'
 
 const router = useRouter()
@@ -181,7 +178,7 @@ const headers = [
   { title: 'Số tiền', key: 'amount', width: 130 },
   { title: 'Hạn nộp', key: 'dueDate', width: 110 },
   { title: 'Ngày nộp', key: 'paidDate', width: 110 },
-  { title: 'Trạng thái', key: 'status', width: 130 },
+  
   { title: '', key: 'actions', width: 100, sortable: false },
 ]
 

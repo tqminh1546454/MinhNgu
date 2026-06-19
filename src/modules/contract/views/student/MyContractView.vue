@@ -6,7 +6,7 @@
     <v-row v-else>
       <v-col cols="12" md="7">
         <v-card class="pa-6 rounded-xl">
-          <div class="d-flex align-center mb-4"><v-icon color="primary" size="32" class="mr-3">mdi-file-document-check</v-icon><div><div class="text-h6 font-weight-bold">{{ contract.contractCode }}</div><StatusChip :status="contract.status" /></div></div>
+          <div class="d-flex align-center mb-4"><v-icon color="primary" size="32" class="mr-3">mdi-file-document-check</v-icon><div><div class="text-h6 font-weight-bold">{{ contract.contractCode }}</div></div></div>
           <v-divider class="my-4" />
           <v-table density="compact"><tbody>
             <tr><td class="text-grey" width="140">Phòng</td><td class="font-weight-medium">{{ contract.roomNumberSnapshot }} — {{ contract.bedNumberSnapshot }}</td></tr>
@@ -66,7 +66,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { http } from '@/shared/http'
 import { formatDate, formatCurrency, formatEnum } from '@/shared/utils/formatters'

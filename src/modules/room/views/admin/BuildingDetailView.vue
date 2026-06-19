@@ -6,7 +6,7 @@
         <v-col cols="6" sm="3"><div class="text-caption text-grey">Tên</div><div class="font-weight-medium">{{ building.name }}</div></v-col>
         <v-col cols="6" sm="3"><div class="text-caption text-grey">Số tầng</div><div>{{ building.totalFloors }}</div></v-col>
         <v-col cols="6" sm="3"><div class="text-caption text-grey">Loại KTX</div><div><v-chip size="small" variant="tonal" :color="building.genderType==='MALE'?'indigo':building.genderType==='FEMALE'?'pink':'teal'">{{ formatEnum(building.genderType) }}</v-chip></div></v-col>
-        <v-col cols="6" sm="3"><div class="text-caption text-grey">Trạng thái</div><StatusChip :status="building.status" /></v-col>
+        <v-col cols="6" sm="3"></v-col>
       </v-row>
     </v-card>
     <v-tabs v-model="tab" color="primary" class="mb-4">
@@ -15,8 +15,7 @@
     </v-tabs>
     <v-card v-if="tab==='rooms'" class="pa-4">
       <v-data-table-server :headers="roomHeaders" :items="rooms" :items-length="rooms.length" :loading="loadingRooms" items-per-page="-1">
-        <template #item.status="{ item }"><StatusChip :status="item.status" /></template>
-        <template #item.occupancy="{ item }">{{ item.currentOccupancy }}/{{ item.roomType?.capacity }}</template>
+                <template #item.occupancy="{ item }">{{ item.currentOccupancy }}/{{ item.roomType?.capacity }}</template>
         <template #item.actions="{ item }"><v-btn icon size="small" variant="text" @click="$router.push('/room/rooms/'+item.id)"><v-icon>mdi-eye</v-icon></v-btn></template>
       </v-data-table-server>
     </v-card>
@@ -36,7 +35,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatEnum } from '@/shared/utils/formatters'
 
@@ -49,7 +47,7 @@ const loadingRooms = ref(false)
 const roomHeaders = [
   { title: 'Phòng', key: 'roomNumber' }, { title: 'Tầng', key: 'floorNumber', width: 70 },
   { title: 'Loại', key: 'roomType.typeName' }, { title: 'Sức chứa', key: 'occupancy', width: 90 },
-  { title: 'Trạng thái', key: 'status', width: 130 }, { title: '', key: 'actions', width: 60, sortable: false },
+   { title: '', key: 'actions', width: 60, sortable: false },
 ]
 
 const roomStats = computed(() => [

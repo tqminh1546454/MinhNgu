@@ -73,10 +73,7 @@
 
     <!-- Top Bar -->
     <v-app-bar color="primary" density="default" elevation="0">
-      <v-app-bar-nav-icon
-        @click="lgAndUp ? (rail = !rail) : (drawer = !drawer)"
-        aria-label="Toggle menu"
-      />
+
       <v-app-bar-title class="text-body-1 font-weight-medium">
         {{ currentTitle }}
       </v-app-bar-title>
@@ -90,7 +87,7 @@
           </v-btn>
         </template>
         <v-list density="compact" min-width="180">
-          <v-list-item prepend-icon="mdi-account" title="Hồ sơ" />
+          <v-list-item prepend-icon="mdi-account" title="Hồ sơ" to="/contract/my-profile" />
           <v-list-item prepend-icon="mdi-lock-reset" title="Đổi mật khẩu" @click="showChangePassword = true" />
           <v-divider />
           <v-list-item prepend-icon="mdi-logout" title="Đăng xuất" @click="handleLogout" />
@@ -258,7 +255,7 @@ const adminMenu: MenuSection[] = [
       { icon: 'mdi-office-building', label: 'Tòa nhà', path: '/room/buildings' },
       { icon: 'mdi-bed', label: 'Loại phòng', path: '/room/room-types' },
       { icon: 'mdi-door', label: 'Quản lý phòng', path: '/room/rooms' },
-      { icon: 'mdi-floor-plan', label: 'Sơ đồ tầng', path: '/room/floor-map' },
+
     ],
   },
   {
@@ -287,7 +284,7 @@ const managerMenu: MenuSection[] = [
       { icon: 'mdi-office-building', label: 'Tòa nhà', path: '/room/buildings' },
       { icon: 'mdi-bed', label: 'Loại phòng', path: '/room/room-types' },
       { icon: 'mdi-door', label: 'Quản lý phòng', path: '/room/rooms' },
-      { icon: 'mdi-floor-plan', label: 'Sơ đồ tầng', path: '/room/floor-map' },
+
     ],
   },
   {

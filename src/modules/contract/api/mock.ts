@@ -67,69 +67,112 @@ saveStored('applications', applications)
 saveStored('contracts', contracts)
 saveStored('occupancies', occupancies)
 
-// ── Student endpoints ──
-mock.onGet('/api/students').reply((c) => {
-  let f = [...students]; const p = c.params || {}
-  if (p.status) f = f.filter(s => s.status === p.status)
-  if (p.hasActiveContract !== undefined) f = f.filter(s => String(s.hasActiveContract) === p.hasActiveContract)
-  if (p.keyword) { const kw = p.keyword.toLowerCase(); f = f.filter(s => s.fullName.toLowerCase().includes(kw) || s.studentCode.toLowerCase().includes(kw) || (s.email||'').toLowerCase().includes(kw)) }
-  const page = parseInt(p.page) || 1, ps = parseInt(p.pageSize) || 20, start = (page-1)*ps
-  return [200, { items: f.slice(start, start+ps), page, pageSize: ps, totalItems: f.length, totalPages: Math.ceil(f.length/ps) }]
-})
-mock.onGet(/\/api\/students\/by-code\/[^/]+$/).reply((c) => {
-  const code = c.url!.split('/').pop()
-  const s = students.find(x => x.studentCode === code)
-  return s ? [200, s] : [404]
-})
-mock.onGet(/\/api\/students\/[^/]+\/summary$/).reply((c) => {
-  const id = c.url!.split('/')[3]
-  const s = students.find(x => x.id === id)
-  if (!s) return [404]
-  const ct = contracts.find(x => x.studentId === id && x.status === 'ACTIVE')
-  const app = applications.find(x => x.studentId === id)
-  return [200, { student: s, activeContract: ct || null, latestApplication: app || null }]
-})
-mock.onGet(/\/api\/students\/[^/]+$/).reply((c) => {
-  const id = c.url!.split('/').pop()
-  const s = students.find(x => x.id === id)
-  return s ? [200, s] : [404]
-})
-mock.onPost('/api/students').reply((c) => {
+// ── Student endpoints removed because real API exists ──
+mock.onPost(/\/api\/students\/[^/]+\/assign-room/).reply((c) => {
+  const studentId = c.url!.split('/')[3]
+  const idx = students.findIndex(x => x.id === studentId)
+  if (idx < 0) return [404, { message: 'Student not found' }]
+  const student = students[idx]
+  
   const body = JSON.parse(c.data)
-  const item = { id: 'st-' + Date.now(), ...body, status: 'ACTIVE', hasActiveContract: false, activeRoomNumber: null, createdAt: new Date().toISOString(), updatedAt: null }
-  students.push(item)
-  saveStored('students', students)
-  return [201, item]
-})
-mock.onPut(/\/api\/students\/[^/]+$/).reply((c) => {
-  const id = c.url!.split('/').pop(); const idx = students.findIndex(x => x.id === id)
-  if (idx < 0) return [404]
-  students[idx] = { ...students[idx], ...JSON.parse(c.data), updatedAt: new Date().toISOString() }
-  saveStored('students', students)
-  return [200, students[idx]]
-})
-mock.onPatch(/\/api\/students\/[^/]+\/status/).reply((c) => {
-  const id = c.url!.split('/')[3]; const idx = students.findIndex(x => x.id === id)
-  if (idx < 0) return [404]
-  students[idx].status = JSON.parse(c.data).status
-  saveStored('students', students)
-  return [204]
-})
-mock.onPatch(/\/api\/students\/[^/]+\/contact/).reply((c) => {
-  const id = c.url!.split('/')[3]; const idx = students.findIndex(x => x.id === id)
-  if (idx < 0) return [404]
-  const body = JSON.parse(c.data)
-  Object.assign(students[idx], body)
-  saveStored('students', students)
-  return [200, students[idx]]
-})
-mock.onDelete(/\/api\/students\/[^/]+$/).reply((c) => {
-  const id = c.url!.split('/').pop(); const idx = students.findIndex(x => x.id === id)
-  if (idx >= 0) {
-    students.splice(idx, 1)
-    saveStored('students', students)
+  
+  let roomNumberSnapshot = ''
+  let bedNumberSnapshot = ''
+  let roomTypeNameSnapshot = ''
+  let buildingId = ''
+  let roomTypeId = ''
+  
+  const roomsStore = localStorage.getItem('ktx_mock_rooms')
+  const bedsStore = localStorage.getItem('ktx_mock_beds')
+  if (roomsStore && bedsStore) {
+    try {
+      const localRooms = JSON.parse(roomsStore)
+      const localBeds = JSON.parse(bedsStore)
+      
+      const rIdx = localRooms.findIndex((r: any) => r.id === body.roomId)
+      const bIdx = localBeds.findIndex((b: any) => b.id === body.bedId)
+      
+      if (bIdx >= 0) {
+        localBeds[bIdx].status = 'OCCUPIED'
+        bedNumberSnapshot = localBeds[bIdx].bedNumber
+      }
+      if (rIdx >= 0) {
+        localRooms[rIdx].currentOccupancy += 1
+        if (localRooms[rIdx].currentOccupancy >= localRooms[rIdx].roomType.capacity) {
+          localRooms[rIdx].status = 'FULL'
+        }
+        roomNumberSnapshot = localRooms[rIdx].roomNumber
+        roomTypeNameSnapshot = localRooms[rIdx].roomType.typeName
+        buildingId = localRooms[rIdx].buildingId
+        roomTypeId = localRooms[rIdx].roomType.id
+        
+        const roomBedIdx = localRooms[rIdx].beds.findIndex((b: any) => b.id === body.bedId)
+        if (roomBedIdx >= 0) {
+          localRooms[rIdx].beds[roomBedIdx].status = 'OCCUPIED'
+        }
+      }
+      localStorage.setItem('ktx_mock_rooms', JSON.stringify(localRooms))
+      localStorage.setItem('ktx_mock_beds', JSON.stringify(localBeds))
+    } catch (e) {
+      console.error(e)
+    }
   }
-  return [204]
+
+  const ct = { 
+    id: 'ct-' + Date.now(), 
+    contractCode: `HD-2026-${String(contracts.length+1).padStart(4,'0')}`, 
+    applicationId: null, 
+    studentId: student.id, 
+    studentCode: student.studentCode, 
+    studentName: student.fullName, 
+    buildingId, 
+    roomTypeId, 
+    roomId: body.roomId, 
+    bedId: body.bedId, 
+    buildingNameSnapshot: 'KTX', 
+    roomNumberSnapshot, 
+    bedNumberSnapshot, 
+    roomTypeNameSnapshot, 
+    startDate: body.contractStartDate, 
+    endDate: body.contractEndDate, 
+    monthlyPrice: body.monthlyPrice, 
+    depositAmount: body.depositAmount || 0, 
+    paymentCycle: body.paymentCycle || 'MONTHLY', 
+    status: 'ACTIVE', 
+    signedAt: new Date().toISOString(), 
+    terminatedAt: null, 
+    terminateReason: null, 
+    createdAt: new Date().toISOString(), 
+    updatedAt: null 
+  }
+  contracts.push(ct)
+
+  student.hasActiveContract = true
+  student.activeRoomNumber = roomNumberSnapshot || 'A101'
+
+  const occ = {
+    id: 'occ-' + Date.now(),
+    studentId: student.id,
+    studentCode: student.studentCode,
+    studentName: student.fullName,
+    contractId: ct.id,
+    contractCode: ct.contractCode,
+    roomId: ct.roomId,
+    bedId: ct.bedId,
+    roomNumberSnapshot,
+    bedNumberSnapshot,
+    checkInDate: ct.startDate,
+    checkOutDate: null,
+    status: 'ACTIVE',
+    createdAt: new Date().toISOString(),
+    updatedAt: null
+  }
+  occupancies.push(occ)
+
+  saveStored('contracts', contracts)
+  saveStored('students', students)
+  saveStored('occupancies', occupancies)
+  return [200, { status: 'ASSIGNED', contract: ct }]
 })
 
 // ── Application endpoints ──

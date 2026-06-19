@@ -5,7 +5,7 @@
     <v-row>
       <v-col cols="12" md="7">
         <v-card class="pa-6 rounded-xl">
-          <v-stepper v-model="step" :items="['Chọn phòng', 'Thông tin', 'Xác nhận']" flat>
+          <v-stepper v-model="step" :items="['Chọn phòng', 'Thông tin', 'Xác nhận']" flat hide-actions>
             <template #item.1>
               <div class="pa-4">
                 <v-select v-model="form.buildingId" :items="buildingOptions" label="Chọn tòa nhà *" class="mb-3" />

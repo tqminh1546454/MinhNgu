@@ -45,18 +45,7 @@
             @update:model-value="loadData"
           />
         </v-col>
-        <v-col cols="12" sm="3" md="2">
-          <v-select
-            v-model="statusFilter"
-            :items="STATUS_FILTER_OPTIONS"
-            label="Trạng thái"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="loadData"
-          />
-        </v-col>
-      </v-row>
+              </v-row>
     </v-card>
 
     <!-- Admins Data Table -->
@@ -169,7 +158,7 @@ const headers = [
   { title: 'Tên đăng nhập', key: 'username', width: '22%' },
   { title: 'Họ và tên', key: 'name', width: '28%' },
   { title: 'Role', key: 'role', width: '20%' },
-  { title: 'Trạng thái', key: 'status', width: '18%' },
+  
   { title: 'Hành động', key: 'actions', width: '12%', sortable: false, align: 'end' as const }
 ]
 

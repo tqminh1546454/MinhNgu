@@ -4,13 +4,11 @@
     <v-card class="pa-4 mb-4">
       <v-row dense>
         <v-col cols="12" sm="4"><v-text-field v-model="search" prepend-inner-icon="mdi-magnify" placeholder="Tìm SV..." density="compact" clearable @update:model-value="loadData" /></v-col>
-        <v-col cols="12" sm="3"><v-select v-model="statusFilter" :items="[{title:'Tất cả',value:''},...APPLICATION_STATUS_OPTIONS]" label="Trạng thái" density="compact" @update:model-value="loadData" /></v-col>
-      </v-row>
+              </v-row>
     </v-card>
     <v-card>
       <v-data-table-server :headers="headers" :items="items" :items-length="total" :loading="loading" :items-per-page="pageSize" :page="page" @update:page="page=$event;loadData()" @update:items-per-page="pageSize=$event;loadData()">
-        <template #item.status="{ item }"><StatusChip :status="item.status" /></template>
-        <template #item.submittedAt="{ item }">{{ item.submittedAt ? formatDate(item.submittedAt) : '—' }}</template>
+                <template #item.submittedAt="{ item }">{{ item.submittedAt ? formatDate(item.submittedAt) : '—' }}</template>
         <template #item.actions="{ item }">
           <v-btn v-if="item.status==='SUBMITTED'" icon size="small" variant="text" color="success" @click="$router.push('/contract/applications/'+item.id+'/approve')"><v-icon>mdi-check</v-icon></v-btn>
           <v-btn v-if="item.status==='SUBMITTED'" icon size="small" variant="text" color="error" @click="rejectItem=item;showReject=true"><v-icon>mdi-close</v-icon></v-btn>
@@ -29,20 +27,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatDate } from '@/shared/utils/formatters'
-import { APPLICATION_STATUS_OPTIONS } from '@/shared/utils/constants'
+
 import { useNotify } from '@/shared/composables/useNotify'
 
 const { success } = useNotify()
 const items = ref<any[]>([]); const total = ref(0); const page = ref(1); const pageSize = ref(20)
-const loading = ref(false); const search = ref(''); const statusFilter = ref('')
+const loading = ref(false); const search = ref(''); const statusFilter = ref('SUBMITTED')
 const showReject = ref(false); const rejectItem = ref<any>(null); const rejectReason = ref(''); const rejecting = ref(false)
 
 const headers = [
   { title:'Sinh viên', key:'studentName' },{ title:'Mã SV', key:'studentCode', width:90 },
-  { title:'Ngày gửi', key:'submittedAt', width:110 },{ title:'Trạng thái', key:'status', width:130 },
+  { title:'Ngày gửi', key:'submittedAt', width:110 },
   { title:'', key:'actions', width:100, sortable:false },
 ]
 

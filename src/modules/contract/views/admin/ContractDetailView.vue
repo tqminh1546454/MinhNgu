@@ -16,8 +16,7 @@
             <tr><td class="text-grey">Chu kỳ TT</td><td>{{ formatEnum(ct.paymentCycle) }}</td></tr>
             <tr><td class="text-grey">Bắt đầu</td><td>{{ formatDate(ct.startDate) }}</td></tr>
             <tr><td class="text-grey">Kết thúc</td><td>{{ formatDate(ct.endDate) }}</td></tr>
-            <tr><td class="text-grey">Trạng thái</td><td><StatusChip :status="ct.status" /></td></tr>
-          </tbody></v-table>
+                      </tbody></v-table>
         </v-card>
       </v-col>
       <v-col cols="12" md="6" v-if="ct.status==='ACTIVE'">
@@ -54,7 +53,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatCurrency, formatDate, formatEnum } from '@/shared/utils/formatters'
 import { useNotify } from '@/shared/composables/useNotify'

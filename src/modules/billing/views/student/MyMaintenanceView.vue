@@ -12,7 +12,7 @@
         <v-icon class="mr-2" color="primary">mdi-wrench</v-icon>
         <span class="font-weight-medium">{{ formatEnum(item.type) }} — {{ item.roomNumber }}</span>
         <v-spacer />
-        <StatusChip :status="item.status" />
+        
       </div>
       <p class="text-body-2 text-grey mb-2">{{ item.description }}</p>
       <div class="text-caption text-grey">{{ formatRelativeTime(item.createdAt) }}</div>
@@ -25,7 +25,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { http } from '@/shared/http'
 import { formatRelativeTime, formatEnum } from '@/shared/utils/formatters'
@@ -40,13 +39,13 @@ const loading = ref(false)
 async function loadData() {
   loading.value = true
   try {
-    const { data } = await http.get('/api/maintenance-requests', { params: { studentId: auth.user?.studentId } })
+    const { data } = await http.get('/api/maintenance', { params: { studentId: auth.user?.studentId } })
     items.value = data.items
   } catch(e) { console.error(e) } finally { loading.value = false }
 }
 
 async function cancelItem(item: any) {
-  try { await http.patch(`/api/maintenance-requests/${item.id}/cancel`); success('Đã hủy yêu cầu'); loadData() } catch(e) { console.error(e) }
+  try { await http.put(`/api/maintenance/${item.id}/status`, { status: 'Cancelled' }); success('Đã hủy yêu cầu'); loadData() } catch(e) { console.error(e) }
 }
 
 onMounted(loadData)

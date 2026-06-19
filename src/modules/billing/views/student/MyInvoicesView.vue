@@ -14,7 +14,7 @@
         <v-card :class="inv.status==='OVERDUE'?'border-error':''" class="pa-4">
           <div class="d-flex justify-space-between align-center mb-2">
             <span class="text-h6 font-weight-bold">{{ inv.period }}</span>
-            <StatusChip :status="inv.status" />
+            
           </div>
           <div class="text-body-2 text-grey mb-1">Phòng {{ inv.roomNumber }}</div>
           <div class="text-h5 font-weight-bold text-primary mb-2">{{ formatCurrency(inv.amount) }}</div>
@@ -33,8 +33,7 @@
             <tr><td class="text-grey">Phòng</td><td>{{ detail.roomNumber }}</td></tr>
             <tr><td class="text-grey">Số tiền</td><td class="font-weight-bold">{{ formatCurrency(detail.amount) }}</td></tr>
             <tr><td class="text-grey">Hạn nộp</td><td>{{ formatDate(detail.dueDate) }}</td></tr>
-            <tr><td class="text-grey">Trạng thái</td><td><StatusChip :status="detail.status" /></td></tr>
-            <tr v-if="detail.paidDate"><td class="text-grey">Ngày nộp</td><td>{{ formatDate(detail.paidDate) }}</td></tr>
+                        <tr v-if="detail.paidDate"><td class="text-grey">Ngày nộp</td><td>{{ formatDate(detail.paidDate) }}</td></tr>
           </tbody></v-table>
           <v-alert v-if="detail.status!=='PAID'" type="info" variant="tonal" class="mt-4">Vui lòng đến phòng quản lý KTX hoặc chuyển khoản theo thông tin bên dưới để thanh toán.</v-alert>
         </v-card-text>
@@ -47,7 +46,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { http } from '@/shared/http'
 import { formatCurrency, formatDate } from '@/shared/utils/formatters'
@@ -71,7 +69,7 @@ const unpaidCount = computed(() => items.value.filter(i => i.status === 'UNPAID'
 onMounted(async () => {
   loading.value = true
   try {
-    const { data } = await http.get('/api/invoices', { params: { studentId: auth.user?.studentId } })
+    const { data } = await http.get('/api/invoices/my')
     items.value = data.items
   } catch(e) { console.error(e) } finally { loading.value = false }
 })

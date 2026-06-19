@@ -13,8 +13,7 @@
               <tr><td class="text-grey">Kỳ</td><td>{{ invoice.period }}</td></tr>
               <tr><td class="text-grey">Số tiền</td><td class="font-weight-bold text-primary">{{ formatCurrency(invoice.amount) }}</td></tr>
               <tr><td class="text-grey">Hạn nộp</td><td>{{ formatDate(invoice.dueDate) }}</td></tr>
-              <tr><td class="text-grey">Trạng thái</td><td><StatusChip :status="invoice.status" /></td></tr>
-            </tbody>
+                          </tbody>
           </v-table>
         </v-col>
         <v-col cols="12" md="6" v-if="invoice.status==='PAID'">
@@ -37,7 +36,6 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatCurrency, formatDate } from '@/shared/utils/formatters'
 

@@ -7,7 +7,7 @@ import './assets/styles/main.css'
 
 // Import mock adapters (remove in production)
 import './modules/billing/api/mock'
-import './modules/room/api/mock'
+// import './modules/room/api/mock'
 import './modules/contract/api/mock'
 
 const app = createApp(App)

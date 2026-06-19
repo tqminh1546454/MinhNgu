@@ -14,8 +14,7 @@
     <v-card>
       <v-data-table-server :headers="headers" :items="items" :items-length="items.length" :loading="loading" items-per-page="-1">
         <template #item.genderType="{ item }"><v-chip :color="item.genderType==='MALE'?'indigo':item.genderType==='FEMALE'?'pink':'teal'" size="small" variant="tonal">{{ formatEnum(item.genderType) }}</v-chip></template>
-        <template #item.status="{ item }"><StatusChip :status="item.status" /></template>
-        <template #item.createdAt="{ item }">{{ formatDate(item.createdAt) }}</template>
+                <template #item.createdAt="{ item }">{{ formatDate(item.createdAt) }}</template>
         <template #item.actions="{ item }">
           <v-btn icon size="small" variant="text" @click="$router.push('/room/buildings/'+item.id)" aria-label="Xem"><v-icon>mdi-eye</v-icon></v-btn>
           <v-btn icon size="small" variant="text" @click="openForm(item)" aria-label="Sửa"><v-icon>mdi-pencil</v-icon></v-btn>
@@ -46,11 +45,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import ConfirmDialog from '@/shared/components/ConfirmDialog.vue'
 import { http } from '@/shared/http'
 import { formatDate, formatEnum } from '@/shared/utils/formatters'
-import { GENDER_OPTIONS, BUILDING_STATUS_OPTIONS } from '@/shared/utils/constants'
+import { GENDER_OPTIONS } from '@/shared/utils/constants'
 import { useNotify } from '@/shared/composables/useNotify'
 
 const { success } = useNotify()
@@ -66,7 +64,7 @@ const form = ref({ name: '', totalFloors: 1, genderType: 'MALE', description: ''
 
 const headers = [
   { title: 'Tên', key: 'name' }, { title: 'Số tầng', key: 'totalFloors', width: 90 },
-  { title: 'Loại KTX', key: 'genderType', width: 110 }, { title: 'Trạng thái', key: 'status', width: 130 },
+  { title: 'Loại KTX', key: 'genderType', width: 110 }, 
   { title: 'Ngày tạo', key: 'createdAt', width: 110 }, { title: '', key: 'actions', width: 130, sortable: false },
 ]
 

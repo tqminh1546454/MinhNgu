@@ -4,14 +4,12 @@
     <v-card class="pa-4 mb-4">
       <v-row dense>
         <v-col cols="12" sm="4"><v-text-field v-model="search" prepend-inner-icon="mdi-magnify" placeholder="Tìm mã HĐ, SV..." density="compact" clearable @update:model-value="loadData" /></v-col>
-        <v-col cols="12" sm="3"><v-select v-model="statusFilter" :items="[{title:'Tất cả',value:''},...CONTRACT_STATUS_OPTIONS]" label="Trạng thái" density="compact" @update:model-value="loadData" /></v-col>
-      </v-row>
+              </v-row>
     </v-card>
     <v-card>
       <v-data-table-server :headers="headers" :items="items" :items-length="total" :loading="loading" :items-per-page="pageSize" :page="page" @update:page="page=$event;loadData()" @update:items-per-page="pageSize=$event;loadData()" :row-props="rowProps">
         <template #item.monthlyPrice="{ item }">{{ formatCurrency(item.monthlyPrice) }}</template>
-        <template #item.status="{ item }"><StatusChip :status="item.status" /></template>
-        <template #item.endDate="{ item }">{{ formatDate(item.endDate) }}</template>
+                <template #item.endDate="{ item }">{{ formatDate(item.endDate) }}</template>
         <template #item.actions="{ item }">
           <v-btn icon size="small" variant="text" @click="$router.push('/contract/contracts/'+item.id)"><v-icon>mdi-eye</v-icon></v-btn>
         </template>
@@ -23,10 +21,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import { http } from '@/shared/http'
 import { formatCurrency, formatDate } from '@/shared/utils/formatters'
-import { CONTRACT_STATUS_OPTIONS } from '@/shared/utils/constants'
+
 import dayjs from 'dayjs'
 
 const items = ref<any[]>([]); const total = ref(0); const page = ref(1); const pageSize = ref(20)
@@ -35,7 +32,7 @@ const loading = ref(false); const search = ref(''); const statusFilter = ref('')
 const headers = [
   { title:'Mã HĐ', key:'contractCode', width:140 },{ title:'Sinh viên', key:'studentName' },
   { title:'Phòng', key:'roomNumberSnapshot', width:80 },{ title:'Giá/tháng', key:'monthlyPrice', width:130 },
-  { title:'Đến hạn', key:'endDate', width:110 },{ title:'Trạng thái', key:'status', width:130 },
+  { title:'Đến hạn', key:'endDate', width:110 },
   { title:'', key:'actions', width:60, sortable:false },
 ]
 

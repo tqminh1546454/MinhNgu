@@ -4,7 +4,7 @@
     <div v-if="loading" class="d-flex justify-center py-12"><v-progress-circular indeterminate color="primary" /></div>
     <div v-else-if="!app"><EmptyState icon="mdi-clipboard-text" title="Chưa có đơn" description="Bạn chưa gửi đơn đăng ký phòng." action-text="Đăng ký ngay" @action="$router.push('/contract/my-application')" /></div>
     <v-card v-else class="pa-6" max-width="600">
-      <div class="d-flex align-center mb-6"><StatusChip :status="app.status" /><span class="ml-3 text-body-2 text-grey">Cập nhật: {{ formatRelativeTime(app.updatedAt || app.createdAt) }}</span></div>
+      <div class="d-flex align-center mb-6"><span class="ml-3 text-body-2 text-grey">Cập nhật: {{ formatRelativeTime(app.updatedAt || app.createdAt) }}</span></div>
 
       <v-timeline density="compact" side="end" class="mb-6">
         <v-timeline-item dot-color="success" size="small"><div class="text-body-2 font-weight-medium">Tạo đơn</div><div class="text-caption text-grey">{{ formatDate(app.createdAt) }}</div></v-timeline-item>
@@ -21,7 +21,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
-import StatusChip from '@/shared/components/StatusChip.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { http } from '@/shared/http'
 import { formatDate, formatRelativeTime } from '@/shared/utils/formatters'
